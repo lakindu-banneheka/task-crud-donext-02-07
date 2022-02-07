@@ -1,5 +1,5 @@
-import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-// import axios from "axios";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import axios from "axios";
 import { Itask } from "../modules/modules";
 import { BaseUrl } from "../urlConfig";
 
@@ -11,34 +11,30 @@ interface IinitialState {
 };
 
 const initialState: IinitialState = {
-    taskList: [{ task:'', id:'' }],
+    taskList: [{ task:'', _id:'' }],
     task: '',
     loading: false,
     error:false
 };
 
 export const getTaskList = createAsyncThunk("task/getTaskList", async () => {
-    // const res = await axios.get(`${BaseUrl}/`);
-    // return res.data;
-    return [{task:'test ',id:'1'},{task:'test',id:'2'}]
+    const res = await axios.get(`${BaseUrl}/gettasklist`);
+    return res.data.taskList;
 });
 
 export const addTask = createAsyncThunk("task/addTask", async (task: string) => {
-    // const res = await axios.post(`${BaseUrl}/`, task);
-    console.log('add task', task)
-    return task;
+    const res = await axios.post(`${BaseUrl}/addtask`, {task});
+    return res.data;
 });
 
 export const editTask = createAsyncThunk("task/editTask", async (task: Itask) => {
-    // const res = await axios.post(`${BaseUrl}/`, task);
-    console.log('add task', task)
-    return task;
+    await axios.post(`${BaseUrl}/edittask/${task._id}`, task);
+    return await task;
 });
 
-export const deleteTask = createAsyncThunk("task/deleteTask", async (task: string) => {
-    // const res = await axios.post(`${BaseUrl}/`, task);
-    console.log('add task', task)
-    return task;
+export const deleteTask = createAsyncThunk("task/deleteTask", async (id: string) => {
+    await axios.delete(`${BaseUrl}/deletetask/${id}`);
+    return id;
 });
 
 export const taskSlice = createSlice({
@@ -60,13 +56,13 @@ export const taskSlice = createSlice({
             state.error = true;
         });
 
-
+// add
         builder.addCase(addTask.pending, state => {
             state.loading = true;
         });
         builder.addCase(addTask.fulfilled, (state, { payload }) => {
             state.loading = false;
-            state.task = payload;
+            state.taskList.push(payload);
         });
         builder.addCase(addTask.rejected, state => {
             state.loading = false;
@@ -79,7 +75,10 @@ export const taskSlice = createSlice({
         });
         builder.addCase(editTask.fulfilled, (state, { payload }) => {
             state.loading = false;
-            // state.task = payload;
+            let taskIndex = state.taskList.findIndex(task => task._id === payload._id);
+            const newtaskList = state.taskList;
+            newtaskList[taskIndex].task = payload.task;
+            state.taskList[taskIndex].task = payload.task;
         });
         builder.addCase(editTask.rejected, state => {
             state.loading = false;
@@ -92,7 +91,8 @@ export const taskSlice = createSlice({
         });
         builder.addCase(deleteTask.fulfilled, (state, { payload }) => {
             state.loading = false;
-            // state.task = payload;
+            const newtaskList = state.taskList.filter(task => {return task._id !== payload });
+            state.taskList =  newtaskList;
         });
         builder.addCase(deleteTask.rejected, state => {
             state.loading = false;

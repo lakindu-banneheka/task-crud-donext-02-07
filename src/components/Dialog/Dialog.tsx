@@ -1,9 +1,9 @@
-import React, { FC, useState } from 'react';
+import React, { FC, useEffect, useLayoutEffect, useState } from 'react';
 import InputField from '../InputField.tsx/InputField';
 import { Modal, Button } from 'antd';
 import { Itask } from '../../modules/modules';
 import { useDispatch } from 'react-redux';
-import { deleteTask, editTask } from '../../features/taskSlice';
+import { editTask } from '../../features/taskSlice';
 
 
 interface IDialogProps {
@@ -12,17 +12,28 @@ interface IDialogProps {
 
 const Dialog: FC<IDialogProps> = ({task}) => {
     const [IsVisible,setIsVisible] = useState<boolean>(false);
-    const [editableTask,seteditableTask] = useState<string>(task.task);
+    const [TaskValue,setTaskValue] = useState<string>('');
+    const [editedTask,seteditedTask] = useState<Itask>(task);
+
     const dispatch = useDispatch();
     const handleCancel = () => {
         setIsVisible(false);
     };
+
+    useLayoutEffect(()=>{
+        setTaskValue(task.task);
+    },[task.task]);
     
+    useEffect(()=> {
+        seteditedTask({
+            task: TaskValue,
+            _id: task._id
+        })
+    },[task,TaskValue]);
+
     const onClickEdit = () => {
-        dispatch(editTask({
-            task:editableTask,
-            id:task.id
-        }))
+        dispatch(editTask(editedTask));
+        setIsVisible(false);
     }
     const handleOpenDialog = () => {
         setIsVisible(true);
@@ -36,8 +47,8 @@ const Dialog: FC<IDialogProps> = ({task}) => {
             <Modal title="Edit Task" visible={IsVisible} onCancel={handleCancel} footer={[]} >
                 <div style={{padding:'50px'}} >
                    <InputField
-                        task={editableTask}
-                        settask={seteditableTask}
+                        task={TaskValue}
+                        settask={setTaskValue}
                         onClickSubmit={onClickEdit}
                         placeholder={'Edit task ...'}
                         btnName='EDIT'

@@ -1,7 +1,6 @@
-import React, { FC, useLayoutEffect, useState } from 'react';
+import React, { FC, useEffect, useState } from 'react';
 import InputField from '../components/InputField.tsx/InputField';
-import { useDispatch } from 'react-redux';
-import { useAppSelector } from '../store/store';
+import { useAppDispatch, useAppSelector } from '../store/store';
 import { Itask } from '../modules/modules';
 import { addTask, deleteTask, getTaskList } from '../features/taskSlice';
 import Dialog from '../components/Dialog/Dialog';
@@ -14,7 +13,7 @@ interface IHomeProps {
 
 const Home: FC<IHomeProps> = () => {
     const taskListSelector = useAppSelector(state => state.tasks.taskList);
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
     const [task,settask] = useState<string>('');
     const [taskList,settaskList] = useState<Itask[]>([]);
     
@@ -24,11 +23,11 @@ const Home: FC<IHomeProps> = () => {
         settask('');
     };
 
-    useLayoutEffect(()=>{
+    useEffect(()=>{
         settaskList(taskListSelector);
     },[taskListSelector]);
 
-    useLayoutEffect(()=>{
+    useEffect(()=>{
         dispatch(getTaskList());
     },[dispatch]);
 
@@ -51,7 +50,7 @@ const Home: FC<IHomeProps> = () => {
                 <div style={{ display:'inline-block'}} >
                         { taskList.map((task,i) => {
                             return (
-                                <div key={task.id} 
+                                <div key={i} 
                                         style={{display:'flex',justifyContent:'space-between',margin:'20px', width:'100%', background:'#cfcfcf', 
                                                 padding:'10px 20px',alignItems:'center',borderRadius:'10px', height:'50px'
                                     }} >
@@ -60,7 +59,7 @@ const Home: FC<IHomeProps> = () => {
                                     </div>
                                     <div >
                                         <Dialog task={task} />
-                                        <Button type='primary' danger onClick={()=>onClickDelete(task.id)} style={{padding:'2px 5px', margin:'5px', borderRadius:'5px', width:'70px'}}>
+                                        <Button type='primary' danger onClick={()=>onClickDelete(task._id)} style={{padding:'2px 5px', margin:'5px', borderRadius:'5px', width:'70px'}}>
                                             DELETE
                                         </Button>
                                     </div>
